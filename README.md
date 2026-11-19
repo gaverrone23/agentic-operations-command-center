@@ -1,97 +1,93 @@
 # Agentic Operations Command Center
 
-Interactive portfolio prototype of a **fictional** on-demand mobility service. It demonstrates how seven specialized operational roles can coordinate incident investigation, reconcile evidence, measure outcomes and reserve high-consequence decisions for human review.
+**Interactive prototype:** [Open the live demo](https://agentic-operations-command-center.gv30.workers.dev/)
 
-**No real company, city, operating system, rider data, partner, API or dispatch integration is represented.** All operational events, policies, identities and measurements are synthetic. The seven-role workflow is a **deterministic simulation**, not seven independently deployed LLM agents.
+A portfolio project exploring how an operations team can investigate incidents, coordinate specialized workstreams, and keep consequential decisions under human control. Built around a **fictional on-demand mobility service** with synthetic data.
 
-## What you can try
+**My contribution:** I defined the product concept, incident scenarios, operating workflow, evidence requirements, human approval controls, and review criteria. I directed iterative design, testing, and deployment using AI-assisted software development. This is an independent prototype, not a commercial deployment.
 
-- Select and start one of four scenarios: an accessible-vehicle disruption, driver availability disruption, zone-booking anomaly, or duplicate-trip pattern discovery.
-- Follow the same shared case state across **Office**, **Mission Control**, **Decisions**, **Impact**, and **Audit**.
-- Review simulated evidence, understand why certain agents activate, and use human approval, modification or hold controls where a partner-facing decision is needed.
-- Open **Ask the case**. Without model configuration, the assistant gives visibly labeled reference answers from fixed case data, including concise rephrasing of earlier questions. With Gemini configured, the Worker calls the model server-side, using only synthetic evidence fixtures. A bounded six-turn history supports follow-up questions but is never considered authoritative evidence. The chat panel can move to either side of the screen.
+## The problem
 
-## Architecture
+Operational disruptions create fragmented evidence, competing priorities, and pressure to act before facts are verified. This prototype tests a coordinated response: specialized roles examine different aspects of an incident, share a common case state, and escalate decisions that require human judgment.
+
+## Try the demo
+
+1. Start with **Accessible Vehicle Disruption**.
+2. Follow the case through **Office**, **Mission Control**, **Decisions**, **Impact**, and **Audit**.
+3. Inspect the evidence and the simulated actions of seven specialized operational roles.
+4. At the decision point, approve, modify, or hold a *simulated* partner update. No message is actually sent.
+5. Open **Ask the case** to question the evidence. The assistant identifies whether it is using Gemini or prepared reference responses.
+6. Reset and explore **Driver Availability**, **Zone Booking**, and **Duplicate-Trip Discovery** to see how the workflow changes by scenario.
+
+See the [three-minute walkthrough](public/demo-script.md) for an interview-friendly sequence.
+
+## What I designed and tested
+
+- Four incident scenarios with different activation paths, assumptions, and consequences.
+- Seven role-specific simulated workstreams coordinated through one shared case record.
+- Human approval, modification, and hold controls for consequential modeled decisions.
+- An evidence trail, impact measurements, and an audit view that distinguish actions from verified outcomes.
+- A scoped case assistant that uses synthetic scenario facts and cannot execute operations.
+- Test cases for scenario progression, role activation, decisions, reference answers, and API validation.
+
+## Technology
+
+| Layer | Tools |
+| --- | --- |
+| Frontend | React, TypeScript, Vite, Tailwind CSS |
+| State and simulation | TypeScript reducer, scenario fixtures, deterministic workflow logic |
+| Assistant API | Cloudflare Workers, server-side validation and synthetic evidence grounding |
+| Optional generative AI | Google Gemini 2.5 Flash-Lite via server-side API key |
+| Deployment | Cloudflare Workers, GitHub-based workflow |
+| Tests | Node test scripts, TypeScript type checking, production build |
+
+### How the AI works
+
+**The seven operational roles are deterministic simulations, not seven autonomous LLM agents.** The optional **Ask the case** feature is the part that can call a generative model. With a valid server-side Gemini key, it generates an answer grounded in the selected synthetic scenario; without one, it returns explicitly labeled prepared reference answers. A provider failure can also trigger that labeled fallback. The browser cannot access the key.
 
 ```text
-React + TypeScript + Vite UI
-    |-- Deterministic reducer and scenario fixtures (browser state)
-    |-- Seven role-specific simulated workstreams
-    |-- Impact measurements and audit trail (session only)
-    |-- Case Assistant (context from selected scenario and stage)
-            |
-            v
-      /api/chat (Cloudflare Worker)
-            |-- Validates request and domain scope
-            |-- Builds trusted context from checked-in synthetic fixtures
-            |-- No key: labeled deterministic reference response
-            |-- Key: Gemini 2.5 Flash-Lite request (server-side secret)
-            '-- Provider failure: labeled reference fallback
+React + TypeScript interface
+    |-- Four synthetic scenarios and seven simulated roles
+    |-- Shared case state, human gates, impact and audit
+    '-- Ask the case
+           |-- Cloudflare Worker validates question and context
+           |-- Gemini if configured and available
+           '-- Labeled reference response otherwise
 ```
 
-The Worker never invokes real operations, transactions, dispatch APIs, email or partner communications. A successful response is advisory; all operational scenario state changes remain deterministic and driven by user actions and ticks.
+## Run locally
 
-## Local development
-
-Requires Node.js 22+ and npm.
+Requires Node.js 22.13+ and npm.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open the local address printed by Vite. All four incident scenarios work without an API key. In this mode, the assistant explicitly reports **Reference mode**, not live AI.
-
-### Optional Gemini integration
-
-The API key must remain server-side. For local development, copy `.dev.vars.example` to `.dev.vars` and replace the placeholder with your own Gemini API key:
-
-```text
-GEMINI_API_KEY=your-key-here
-```
-
-Never commit `.dev.vars`, `.env`, or any secrets. The app intentionally does not expose the model key in browser JavaScript. Calls may incur provider usage costs or be subject to free-tier quotas. Use fictional data only.
-
-### Build and test
+The four simulations work without an API key. To enable Gemini locally, copy `.dev.vars.example` to `.dev.vars` and set `GEMINI_API_KEY` privately. Do **not** commit `.dev.vars`, `.env`, credentials, or tokens.
 
 ```bash
 npm run test
 npm run typecheck
 npm run build
-npm run preview
 ```
 
-The simulation tests cover state progression, four scenarios, stage-specific agent behavior, human approval, hold and reset logic. Assistant tests cover input validation, grounded reference mode, scope restrictions and HTTP request handling. Live-model behavior requires an API key and an additional integration test in your own environment.
+See [Cloudflare deployment instructions](docs/CLOUDFLARE_DEPLOYMENT.md) and [implementation notes](public/implementation.md). The demo link is the intended deployment address; public availability and live Gemini operation should be tested separately after deployments.
 
-## Free-tier Cloudflare Workers deployment
+## Boundaries
 
-1. Create a Cloudflare account and confirm the current free plan suits your expected demo traffic.
-2. In the repository root run `npm install`, `npm run test`, and `npm run build`.
-3. Authenticate Cloudflare: `npx wrangler login`.
-4. Deploy: `npx wrangler deploy` (the build output includes the static app and Worker API).
-5. For live AI, set an encrypted server-side secret: `npx wrangler secret put GEMINI_API_KEY`, then redeploy if prompted.
-6. Verify the deployed URL, including all four scenario paths and the AI/reference status. Do not publish any private source archive or original interview materials.
+- No real company, city, rider, vehicle, dispatcher, partner, or production system is represented.
+- All incidents, service levels, policies, identities, and numerical measurements are **synthetic**. They are not verified commercial results or ROI.
+- No real dispatch, messages, payments, or external operational actions occur.
+- The simulated audit is session-based, not a production-grade persistent record.
+- This is a demonstration of product and operational design, not a claim of production-ready security, real integrations, or autonomous multi-agent execution.
+- A publicly available AI-enabled endpoint can consume provider quota; usage limits and abuse controls should be reviewed before distributing the demo widely.
 
-The Cloudflare Worker name is `agentic-operations-command-center`. Public URL shape depends on your Cloudflare account, e.g. `https://agentic-operations-command-center.<account>.workers.dev`. This repository alone does not create or activate a live deployment.
+## More detail
 
-**Public endpoint caution:** Anyone who can access the deployed chat endpoint can consume API quota. Before broadly sharing a Gemini-enabled public deployment, configure provider budget/quotas and Cloudflare rate limiting or an equivalent abuse-control mechanism. For interviews, reference mode is a no-key fallback that avoids external model charges.
+- [Demo script](public/demo-script.md)
+- [Technical implementation](public/implementation.md)
+- [Design assumptions and pushback register](public/pushback-register.md)
+- [Verification checklist](docs/PORTFOLIO_HANDOFF.md)
 
-## Product boundaries and evidence integrity
-
-- **Source of truth:** All case fixtures are committed in `lib/scenarios.ts` and `lib/simulation.ts`. The Worker constructs its own case context from those files. Browser input provides only the question and scenario/stage selection; no external case facts are accepted from a client as authoritative evidence.
-- **Human authority:** Only the simulated partner communication requires human approval in the relevant scenarios; no external communication is ever sent.
-- **Provenance:** All data and metrics are illustrative, not performance results or confirmed service policies.
-- **No production controls:** There is no identity-based authorization, persistent audit ledger, live telemetry, true multi-agent LLM execution, real-world governance, integration monitoring or production operational SLA.
-- **Chat scope:** Questions must relate to the demo case. The assistant cannot execute actions. Reference answers are templates. Model responses must be checked against fixture facts; a model request can fail or generate unsupported wording.
-
-## Docs
-
-- [Three-minute demo script](public/demo-script.md)
-- [Technical implementation notes](public/implementation.md)
-- [Interview questions and limitations](public/pushback-register.md)
-- [Development handoff and verification checklist](docs/PORTFOLIO_HANDOFF.md)
-- [Cloudflare Git deployment and launch checklist](docs/CLOUDFLARE_DEPLOYMENT.md)
-
-## Credits
-
-Independent prototype created with AI-assisted software development, product design, and iterative testing. It is a portfolio demonstration, not a commercial implementation or an endorsement by any transportation provider.
+Developed as an independent portfolio prototype with AI-assisted implementation and iterative review. No transportation provider has endorsed or supplied data to the project.
