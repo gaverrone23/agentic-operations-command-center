@@ -9,7 +9,7 @@ Interactive portfolio prototype of a **fictional** on-demand mobility service. I
 - Select and start one of four scenarios: an accessible-vehicle disruption, driver availability disruption, zone-booking anomaly, or duplicate-trip pattern discovery.
 - Follow the same shared case state across **Office**, **Mission Control**, **Decisions**, **Impact**, and **Audit**.
 - Review simulated evidence, understand why certain agents activate, and use human approval, modification or hold controls where a partner-facing decision is needed.
-- Open **Ask the case**. Without model configuration, the assistant gives visibly labeled reference answers from fixed case data. With Gemini configured, the Worker calls the model server-side, using only the synthetic evidence fixtures.
+- Open **Ask the case**. Without model configuration, the assistant gives visibly labeled reference answers from fixed case data, including concise rephrasing of earlier questions. With Gemini configured, the Worker calls the model server-side, using only synthetic evidence fixtures. A bounded six-turn history supports follow-up questions but is never considered authoritative evidence. The chat panel can move to either side of the screen.
 
 ## Architecture
 
