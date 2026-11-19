@@ -58,7 +58,7 @@ let modelCalled=false;
 try {
  globalThis.fetch=async (target,opts)=>{
    modelCalled=true;
-   assert.match(String(target),/generativelanguage\\.googleapis\\.com/);
+   assert.match(String(target),/generativelanguage\.googleapis\.com/);
    const requestPayload=JSON.parse(String(opts.body));
    const prompt=requestPayload.contents[0].parts[0].text;
    assert.match(prompt,/Recent conversation/);
