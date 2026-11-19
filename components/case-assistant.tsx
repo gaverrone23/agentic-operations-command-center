@@ -25,7 +25,7 @@ export function CaseAssistant({state}:{state:State}) {
   },[state.stage]);
   useEffect(()=>{
     let active=true;
-    fetch('/api/health').then(r=>r.json()).then(x=>{if(active)setEnabled(Boolean(x.aiConfigured));}).catch(()=>{if(active)setEnabled(false);});
+    fetch('/api/health').then(async r=>(await r.json()) as {aiConfigured?:boolean}).then(x=>{if(active)setEnabled(Boolean(x.aiConfigured));}).catch(()=>{if(active)setEnabled(false);});
     return ()=>{active=false;};
   },[]);
   async function ask(text:string) {
@@ -38,9 +38,10 @@ export function CaseAssistant({state}:{state:State}) {
       try {
         response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,scenario:state.scenario,stage:state.stage,paused:state.paused}),signal:controller.signal});
       } finally {clearTimeout(timeout);}
-      const data=await response.json();
+      const data=(await response.json()) as {error?:string;answer?:string;mode?:Message['mode'];notice?:string;sources?:string[]};
       if(!response.ok)throw new Error(data.error||'Request rejected');
-      setMessages(m=>[...m,{role:'assistant',text:data.answer,mode:data.mode,notice:data.notice,sources:data.sources}]);
+      if(typeof data.answer!=='string')throw new Error('Invalid assistant response');
+      setMessages(m=>[...m,{role:'assistant',text:data.answer!,mode:data.mode,notice:data.notice,sources:data.sources}]);
     } catch {
       setMessages(m=>[...m,{role:'assistant',text:'The case assistant is temporarily unavailable. The simulation itself remains fully interactive. Please retry or inspect the Audit view.'}]);
     } finally {setLoading(false);}
