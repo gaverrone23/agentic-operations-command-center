@@ -64,21 +64,21 @@ export function caseKnowledge(query: CaseQuery) {
 }
 
 export function isRephraseRequest(question:string):boolean {
-  return /\\b(rephrase|reword|simplif(?:y|ied)|plain(?:er)? (?:english|words)|different words|more objectively|objectively|more concise|shorter|two sentences|explain (?:that|it) again|summari[sz]e (?:that|it))\\b/i.test(question);
+  return /\b(rephrase|reword|simplif(?:y|ied)|plain(?:er)? (?:english|words)|different words|more objectively|objectively|more concise|shorter|two sentences|explain (?:that|it) again|summari[sz]e (?:that|it))\b/i.test(question);
 }
 
 function conciseFollowUp(query: CaseQuery, k: ReturnType<typeof caseKnowledge>):string {
   const previous=[...(query.history||[])].reverse().find(t=>t.role==='user')?.text.toLowerCase()||'';
-  if (/\\b(agent|team|orchestrat|coordinat|role)\\b/.test(previous)) {
+  if (/\b(agent|team|orchestrat|coordinat|role)\b/.test(previous)) {
     return 'The seven simulated roles share one incident record. Each checks a different aspect of the case, but the workflow follows predefined rules rather than seven independent AI models.';
   }
-  if (/\\b(human|approv|decision|escalat|partner|message|send)\\b/.test(previous)) {
+  if (/\b(human|approv|decision|escalat|partner|message|send)\b/.test(previous)) {
     return k.humanDecision+' This prototype never sends real messages.';
   }
-  if (/\\b(eviden|source|why|proof|fact|signal|confidence)\\b/.test(previous)) {
+  if (/\b(eviden|source|why|proof|fact|signal|confidence)\b/.test(previous)) {
     return 'The plan is based on synthetic case evidence: '+k.evidence+' The assumptions and uncertainties remain explicit.';
   }
-  if (/\\b(impact|metric|outcome|cost|time|recover|saving|result)\\b/.test(previous)) {
+  if (/\b(impact|metric|outcome|cost|time|recover|saving|result)\b/.test(previous)) {
     return 'The displayed time and service impacts are simulated forecasts, not measured real-world improvements. '+k.facts[k.facts.length-2];
   }
   return k.facts[0]+' Current phase: '+k.stageName+'. The next response follows the documented synthetic recovery plan, not live dispatch data.';
