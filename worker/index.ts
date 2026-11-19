@@ -17,7 +17,11 @@ export async function handleCaseRequest(req:Request, env:Env):Promise<Response> 
   const length = Number(req.headers.get('content-length')||0);
   if (length > 4096) return json({error:'Request too large'},413);
   let raw:unknown;
-  try { raw=JSON.parse(await req.text()); } catch { return json({error:'Invalid JSON'},400); }
+  try {
+    const bodyText=await req.text();
+    if(bodyText.length>4096)return json({error:'Request too large'},413);
+    raw=JSON.parse(bodyText);
+  } catch { return json({error:'Invalid JSON'},400); }
   const query=validateCaseQuery(raw);
   if (!query) return json({error:'Question, scenario or stage invalid'},400);
   if (!env.GEMINI_API_KEY || isOutOfScope(query.question)) return json(referenceAnswer(query));
