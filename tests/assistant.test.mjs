@@ -85,4 +85,19 @@ response=await handleCaseRequest(new Request(url,{
  method:'POST',headers:{'Content-Type':'application/json'},body:'x'.repeat(4097)
 }),{});
 assert.equal(response.status,413);
+// A configured key can still fail; expose only a safe error category, never provider text.
+const realFetch=globalThis.fetch;
+try {
+  globalThis.fetch=async()=>Response.json({error:{message:'PRIVATE PROVIDER ERROR'}} ,{status:429});
+  const quotaResponse=await handleCaseRequest(new Request(url,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({scenario:'accessible',stage:3,question:'Explain the incident'})
+  }),{GEMINI_API_KEY:'secret-test-key'});
+  assert.equal(quotaResponse.status,200);
+  const quota=await quotaResponse.json();
+  assert.equal(quota.mode,'reference-fallback');
+  assert.equal(quota.diagnosticCode,'provider_http_429');
+  assert.match(quota.notice,/quota or rate limit/i);
+  assert.doesNotMatch(JSON.stringify(quota),/PRIVATE PROVIDER ERROR|secret-test-key/);
+} finally { globalThis.fetch=realFetch; }
 console.log('PASS: four scenarios; bounded history; contextual follow-up; Gemini request mock; validation; guards; fallback.');
