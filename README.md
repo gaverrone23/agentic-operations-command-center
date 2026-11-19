@@ -90,6 +90,7 @@ The Cloudflare Worker name is `agentic-operations-command-center`. Public URL sh
 - [Technical implementation notes](public/implementation.md)
 - [Interview questions and limitations](public/pushback-register.md)
 - [Development handoff and verification checklist](docs/PORTFOLIO_HANDOFF.md)
+- [Cloudflare Git deployment and launch checklist](docs/CLOUDFLARE_DEPLOYMENT.md)
 
 ## Credits
 
